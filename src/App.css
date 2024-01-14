@@ -24,7 +24,7 @@
   border-top: 4px solid orange;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-.card1{
+/* .card1{
   width: 500px;
   max-width: 450px;
   background-color: #fff;
@@ -32,7 +32,7 @@
   border-radius: 5px;
   border-top: 4px solid orange;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+} */
 
 form {
   display: flex;

@@ -4,6 +4,7 @@ import { Button, Modal } from 'react-bootstrap';
 import { Badge, Card } from 'react-bootstrap';
 import { useFormik } from 'formik';
 import './Home.css'
+import { AiOutlinePullRequest } from "react-icons/ai";
 
 const validate = (values) => {
   const errors = {};
@@ -21,6 +22,8 @@ const validate = (values) => {
 
 function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSortingByVote, setIsSortingByVote] = useState(false);
+
   const [challenges, setChallenges] = useState([]);
   const [vote, setVote] = useState({}); // Use an object to store votes for each challenge
   const [modalValues, setModalValues] = useState({
@@ -35,6 +38,10 @@ function Home() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+  };
+  const handleAddChallenge = (newChallenge) => {
+    setChallenges([newChallenge, ...challenges]);
+    setVote({ ...vote, [challenges.length]: 0 });
   };
 
   const formik = useFormik({
@@ -51,9 +58,9 @@ function Home() {
         Description: values.Description,
         Tags: values.Tags,
       };
-
-      setChallenges([...challenges, newChallenge]); // Update challenges array
-      setVote({ ...vote, [challenges.length]: 0 }); // Initialize vote count for the new challenge
+      handleAddChallenge(newChallenge);
+      // setChallenges([...challenges, newChallenge]); // Update challenges array
+      // setVote({ ...vote, [challenges.length]: 0 }); // Initialize vote count for the new challenge
       setModalValues(newChallenge); // Set modal input values to state
       resetForm();
       handleCloseModal();
@@ -67,21 +74,46 @@ function Home() {
     }));
   };
 
+  function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+    const formattedDate = new Date(dateString).toLocaleDateString('en-US', options);
+    return formattedDate;
+  }
+  const sortedChallenges = challenges.slice().sort((a, b) => {
+    const voteCountA = vote[challenges.indexOf(a)] || 0;
+    const voteCountB = vote[challenges.indexOf(b)] || 0;
+  
+    if (isSortingByVote) {
+      return voteCountB - voteCountA; // Sort in descending order based on vote count
+    } else {
+      return challenges.indexOf(a) - challenges.indexOf(b); // Maintain the original order
+    }
+  });
+  
+  const handleSortByVoteClick = () => {
+    setIsSortingByVote((prevSorting) => !prevSorting);
+  };
+
   return (
     <div>
       <nav className="navbar navbar-light bg-light shadow p-4 mb-4 bg-white">
-        <div className="container-fluid">
+        <div className="container-fluid d-flex gap-4">
+          <p><b>Filter : Vote Count : <AiOutlinePullRequest style={{cursor:"pointer"}} onClick={handleSortByVoteClick}/></b></p>
+          <p><b>Create Date : <AiOutlinePullRequest style={{cursor:"pointer"}} /></b></p>
           <Button className="ms-auto btn btn-warning fw-bolder" onClick={handleAddChallengeClick}>
             Add New Challenges
           </Button>
         </div>
       </nav>
       <div className='container1'>
-        {challenges.map((challenge, index) => (
+        {sortedChallenges.map((challenge, index) => (
           <Card key={index} className="w-75 mb-3">
             <Card.Body>
+              <h4>Add New Challenges</h4>
               <h5 className="card-title"><p><b>Title :</b></p>{challenge.Title}</h5>
               <p className="card-text"><p><b>Description :</b></p>{challenge.Description}</p>
+              {/* <p><b>Creation Date:</b> {formatDate(challenge.createdAt)}</p> */}
+              <p><b>Current Date:</b> {formatDate(new Date())}</p>
               <div className='d-flex'>
                 <p className='me-2'><b>Upvote</b></p>
                 <span className='vote me-2' style={{ cursor: 'pointer' }} onClick={() => handleVote(index)}>
@@ -93,7 +125,6 @@ function Home() {
           </Card>
         ))}
       </div>
-
       <Modal show={isModalOpen} onHide={handleCloseModal} backdrop="static" keyboard={false}>
         <Modal.Header closeButton>
           <Modal.Title>Modal title</Modal.Title>
